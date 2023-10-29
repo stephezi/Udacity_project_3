@@ -35,8 +35,24 @@ jobs:
           paths: [backend/node_modules]
           key: backend-build
 
+  test-frontend:
+        docker:
+            - image: node:13.8-buster
+        steps:
+            - checkout
+            - restore_cache:
+                keys: [frontend-build]
+            - run:
+                name: Run frontend test
+                command: |
+                    cd frontend
+                    npm install
+                    npm run test
+
 workflows:
   default:
     jobs:
       - build-frontend
       - build-backend
+       - test-frontend:
+                requires: [build-frontend]
