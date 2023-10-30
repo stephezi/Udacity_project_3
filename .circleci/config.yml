@@ -7,14 +7,14 @@ commands:
     deploy_and_notify_fail:
         steps:
             - slack/notify:
-                channel: '@circle-ci'
+                channel: circle-ci
                 event: fail
                 template: basic_fail_1
 
     deploy_and_notify_pass:
         steps:
             - slack/notify:
-                channel: '@circle-ci'
+                channel: circle-ci
                 event: pass
                 template: basic_success_1
 
