@@ -2,24 +2,23 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.12.5
-jobs:
-  deploy_and_notify:
-    docker:
-     - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - node/install-packages
-      - run:
-          command: npm run deploy_and_notify
-      - slack/notify:
-          channel: '@circle-ci'
-          event: fail
-          template: basic_fail_1
-      - slack/notify:
-          channel: '@circle-ci'
-          event: pass
-          template: basic_success_1
 
+commands:
+    deploy_and_notify_fail:
+        steps:
+            - slack/notify:
+                channel: '@circle-ci'
+                event: fail
+                template: basic_fail_1
+
+    deploy_and_notify_pass:
+        steps:
+            - slack/notify:
+                channel: '@circle-ci'
+                event: pass
+                template: basic_success_1
+
+jobs:
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -36,7 +35,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - deploy_and_notify
+      - deploy_and_notify_fail
+      - deploy_and_notify_pass
 
 
   build-backend:
@@ -55,7 +55,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - deploy_and_notify
+      - deploy_and_notify_fail
+      - deploy_and_notify_pass
 
   test-frontend:
         docker:
@@ -70,7 +71,8 @@ jobs:
                   cd frontend
                   npm install
                   npm run test
-          - deploy_and_notify
+          - deploy_and_notify_fail
+          - deploy_and_notify_pass
 
   scan-frontend:
         docker:
@@ -87,7 +89,8 @@ jobs:
                   npm audit fix --audit-level=critical --force
                   npm audit fix --audit-level=critical
                   npm audit --audit-level=critical
-          - deploy_and_notify
+          - deploy_and_notify_fail
+          - deploy_and_notify_pass
 
   scan-backend:
       docker:
@@ -104,20 +107,17 @@ jobs:
                 npm audit fix --audit-level=critical --force
                 npm audit fix --audit-level=critical
                 npm audit --audit-level=critical
-        - deploy_and_notify
+        - deploy_and_notify_fail
+        - deploy_and_notify_pass
 
 workflows:
-  default:
-      jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-              requires: [build-frontend]
-      - scan-frontend:
+    default:
+        jobs:
+        - build-frontend
+        - build-backend
+        - test-frontend:
                 requires: [build-frontend]
-      - scan-backend:
-          requires: [build-backend]
-  deploy_and_notify:
-    jobs:
-      - deploy:
-            context: udacity
+        - scan-frontend:
+                  requires: [build-frontend]
+        - scan-backend:
+            requires: [build-backend]
