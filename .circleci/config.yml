@@ -10,7 +10,7 @@ jobs:
       - checkout
       - node/install-packages
       - run:
-          command: npm run deploy
+          command: npm run deploy_and_notify
       - slack/notify:
           channel: '@circle-ci'
           event: fail
