@@ -113,10 +113,8 @@ jobs:
         - notify_slack_pass
 
 workflows:
-  deploy_and_notify:
-    jobs:
-      - deploy:
-            context: udacity
+  default:
+      jobs:
       - build-frontend
       - build-backend
       - test-frontend:
@@ -125,3 +123,7 @@ workflows:
                 requires: [build-frontend]
       - scan-backend:
           requires: [build-backend]
+  deploy_and_notify:
+    jobs:
+      - deploy:
+            context: udacity
