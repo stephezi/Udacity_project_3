@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  slack: circleci/slack@4.12.5
+
 jobs:
   build-frontend:
     docker:
@@ -17,6 +20,9 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
+      - notify_slack_error
+      - notify_slack_pass
+
 
   build-backend:
     docker:
@@ -34,6 +40,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+      - notify_slack_error
+      - notify_slack_pass
 
   test-frontend:
         docker:
@@ -48,6 +56,9 @@ jobs:
                     cd frontend
                     npm install
                     npm run test
+            - notify_slack_error
+            - notify_slack_pass
+
   scan-frontend:
         docker:
             - image: node:13.8-buster
@@ -63,6 +74,8 @@ jobs:
                     npm audit fix --audit-level=critical --force
                     npm audit fix --audit-level=critical
                     npm audit --audit-level=critical
+            - notify_slack_error
+            - notify_slack_pass
 
   scan-backend:
       docker:
@@ -79,6 +92,8 @@ jobs:
                   npm audit fix --audit-level=critical --force
                   npm audit fix --audit-level=critical
                   npm audit --audit-level=critical
+          - notify_slack_error
+          - notify_slack_pass
 
 workflows:
   default:
