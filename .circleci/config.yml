@@ -1,23 +1,5 @@
 version: 2.1
 
-orbs:
-  slack: circleci/slack@4.12.5
-
-commands:
-    deploy_and_notify_fail:
-        steps:
-            - slack/notify:
-                channel: circle-ci
-                event: fail
-                template: basic_fail_1
-
-    deploy_and_notify_pass:
-        steps:
-            - slack/notify:
-                channel: circle-ci
-                event: pass
-                template: basic_success_1
-
 jobs:
   build-frontend:
     docker:
@@ -35,9 +17,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - deploy_and_notify_fail
-      - deploy_and_notify_pass
-
 
   build-backend:
     docker:
@@ -55,8 +34,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - deploy_and_notify_fail
-      - deploy_and_notify_pass
 
   test-frontend:
         docker:
@@ -71,8 +48,6 @@ jobs:
                   cd frontend
                   npm install
                   npm run test
-          - deploy_and_notify_fail
-          - deploy_and_notify_pass
 
   scan-frontend:
         docker:
@@ -89,8 +64,6 @@ jobs:
                   npm audit fix --audit-level=critical --force
                   npm audit fix --audit-level=critical
                   npm audit --audit-level=critical
-          - deploy_and_notify_fail
-          - deploy_and_notify_pass
 
   scan-backend:
       docker:
@@ -107,8 +80,6 @@ jobs:
                 npm audit fix --audit-level=critical --force
                 npm audit fix --audit-level=critical
                 npm audit --audit-level=critical
-        - deploy_and_notify_fail
-        - deploy_and_notify_pass
 
 workflows:
     default:
