@@ -153,37 +153,6 @@ jobs:
                     - inventory.txt
             - destroy_environment
 
-  configure-infrastructure:
-        docker:
-            - image: node:13.8-buster
-        steps:
-            - checkout
-            - add_ssh_keys:
-                fingerprints: ["cf:8b:fd:e4:26:a6:34:22:9e:c2:fd:69:63:7e:58:4a"]
-            - attach_workspace:
-                at: .circleci/ansible/
-            - run:
-                name: Update packages
-                command: |
-                    apt update
-            - run:
-                name: Install Ansible
-                command: |
-                    # Install Ansible
-                    apt-get -y install ansible
-            - run:
-                name: Install dependencies (AWS-Cli)
-                command: |
-                    apt-get -y install awscli
-            - run:
-                name: Run Playbook and Configure server
-                no_output_timeout: 30m
-                command: |
-                    # Your command
-                    cd .circleci/ansible
-                    ansible-playbook -i inventory.txt configure-server.yml
-            - destroy_environment
-
 workflows:
     default:
         jobs:
@@ -202,5 +171,3 @@ workflows:
             filters:
                 branches:
                     only: [master]
-        - configure-infrastructure:
-              requires: [deploy-infrastructure]
