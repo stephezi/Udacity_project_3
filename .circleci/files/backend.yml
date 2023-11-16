@@ -20,14 +20,14 @@ Resources:
         ToPort: 3030
         CidrIp: 0.0.0.0/0
 
-        EC2Instance:
-          Type: AWS::EC2::Instance
-          Properties:
-            InstanceType: t2.micro
-            SecurityGroups:
-              - Ref: InstanceSecurityGroup
-            KeyName: udacity
-            ImageId: ami-0c960b947cbb2dd16
-            Tags:
-              - Key: Name
-                Value: !Sub udapeople-backend-${ID}
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      KeyName: udacity
+      ImageId: ami-0c960b947cbb2dd16
+      Tags:
+        - Key: Name
+          Value: !Sub udapeople-backend-${ID}
