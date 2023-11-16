@@ -27,7 +27,7 @@ Resources:
       SecurityGroups:
         - Ref: InstanceSecurityGroup
       KeyName: udacity
-      ImageId: ami-0c960b947cbb2dd16
+      ImageId: ami-0230bd60aa48260c6
       Tags:
         - Key: Name
           Value: !Sub udapeople-backend-${ID}
