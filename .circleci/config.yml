@@ -1,5 +1,23 @@
 version: 2.1
 
+commands:
+  destroy_environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    steps:
+      - run:
+                name: Clean S3 folder
+                when: on_fail
+                command: |
+                    aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+              aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID:0:7}-backend
+              aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID:0:7}-frontend
+              exit 1
+
 jobs:
   build-frontend:
     docker:
@@ -49,6 +67,20 @@ jobs:
                   npm install
                   npm run test
 
+  test-backend:
+        docker:
+            - image: node:13.8-buster
+        steps:
+            - checkout
+            - restore_cache:
+                keys: [backend-build]
+            - run:
+                name: Run backend test
+                command: |
+                    cd backend
+                    npm install
+                    npm run test
+
   scan-frontend:
         docker:
             - image: node:13.8-buster
@@ -81,6 +113,84 @@ jobs:
                 npm audit fix --audit-level=critical
                 npm audit --audit-level=critical
 
+  deploy-infrastructure:
+        docker:
+            - image: node:13.8-buster
+        steps:
+            - checkout
+            - run:
+                name: Update packages
+                command: |
+                    apt update
+            - run:
+                name: Install tar and gzip
+                command: |
+                    apt-get -y install tar gzip
+            - run:
+                name: Install dependencies (AWS-Cli)
+                command: |
+                    apt-get -y install awscli
+            - run:
+                name: Ensure back-end infrastructure exists
+                command: |
+                    aws cloudformation deploy \
+                    --template-file .circleci/files/backend.yml \
+                    --tags project=udapeople \
+                    --stack-name "udapeople-${CIRCLE_WORKFLOW_ID:0:7}-backend" \
+                    --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+            - run:
+                name: Ensure front-end infrastructure exist
+                command: |
+                    aws cloudformation deploy \
+                    --template-file .circleci/files/frontend.yml \
+                    --tags project=udapeople \
+                    --stack-name "udapeople-${CIRCLE_WORKFLOW_ID:0:7}-frontend" \
+                    --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+            - run:
+                name: Add back-end ip to ansible inventory
+                command: |
+                    aws ec2 describe-instances \
+                    --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                    --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                    --output text >> .circleci/ansible/inventory.txt
+            - persist_to_workspace:
+                root: .circleci/ansible/
+                paths:
+                    - inventory.txt
+            - destroy_environment
+
+  configure-infrastructure:
+        docker:
+            - image: node:13.8-buster
+        steps:
+            - checkout
+            - add_ssh_keys:
+                fingerprints: ["cf:8b:fd:e4:26:a6:34:22:9e:c2:fd:69:63:7e:58:4a"]
+            - attach_workspace:
+                at: .circleci/ansible/
+            - run:
+                name: Update packages
+                command: |
+                    apt update
+            - run:
+                name: Install Ansible
+                command: |
+                    # Install Ansible
+                    apt-get -y install ansible
+            - run:
+                name: Install dependencies (AWS-Cli)
+                command: |
+                    apt-get -y install awscli
+            - run:
+                name: Run Playbook and Configure server
+                no_output_timeout: 30m
+                command: |
+                    # Your command
+                    cd .circleci/ansible
+                    ansible-playbook -i inventory.txt configure-server.yml
+            # Here's where you will add some code to rollback on failure
+            - destroy_environment
+
 workflows:
     default:
         jobs:
@@ -88,7 +198,16 @@ workflows:
         - build-backend
         - test-frontend:
                 requires: [build-frontend]
+        - test-backend:
+                requires: [build-backend]
         - scan-frontend:
                   requires: [build-frontend]
         - scan-backend:
             requires: [build-backend]
+        - deploy-infrastructure:
+            requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+            filters:
+                branches:
+                    only: [master]
+        - configure-infrastructure:
+              requires: [deploy-infrastructure]
