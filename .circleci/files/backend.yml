@@ -1,4 +1,9 @@
 
+Parameters:
+  ID:
+    Description: Unique identifier.
+    Type: String
+
 Resources:
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -21,8 +26,8 @@ Resources:
             InstanceType: t2.micro
             SecurityGroups:
               - Ref: InstanceSecurityGroup
-                KeyName: udacity
-                ImageId: ami-0c960b947cbb2dd16
-                Tags:
-                  - Key: Name
-                    Value: !Sub udapeople-backend-${ID}
+            KeyName: udacity
+            ImageId: ami-0c960b947cbb2dd16
+            Tags:
+              - Key: Name
+                Value: !Sub udapeople-backend-${ID}
