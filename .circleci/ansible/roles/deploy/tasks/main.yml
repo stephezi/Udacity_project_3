@@ -1,39 +1,33 @@
 ---
-  - name: "show remote environment"
-    shell: env
 
-  - name: "copy backend binaries"
-    become: yes
-    synchronize:
-      src: ../../backend/dist
-      dest: /home/ubuntu/uda_app
-      recursive: true
+- name: "Ship tar file to ec2 instance and extract it"
+  unarchive:
+    src: /root/project/artifact.tar.gz
+    dest: ~/
 
-  - name: "copy node_modules"
-    become: yes
-    synchronize:
-      src: ../../backend/node_modules
-      dest: /home/ubuntu/uda_app
-      recursive: true
+- name: "Install backend server's package."
+  npm:
+    path: ~/
 
-  - name: "delete anything that might already be running"
-    become: true
-    command: pm2 delete all
-    ignore_errors: true
+- name: "Stop currently running app"
+  ignore_errors: true
+  shell: |
+    pm2 stop server
 
-  - name: "start server"
-    become: true
-    command: pm2 start -f ./main.js
-    args:
-      chdir: /home/ubuntu/uda_app/dist
-    environment:
-     ENVIRONMENT: production
-     TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
-     TYPEORM_MIGRATIONS_DIR: "./migrations"
-     TYPEORM_MIGRATIONS: "./migrations/*.js"
-     TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
-     TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
-     TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
-     TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
-     TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
-     TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+- name: "Start the app"
+  shell: |
+    pm2 start npm -- start --name server
+
+- name: "Check env TYPEORM_ENTITIES"
+  command: 'echo $TYPEFORM_ENTITES'
+  register: output1
+
+- name: "Check env TYPEORM_CONNECTION"
+  command: 'echo $TYPEFORM_CONNECTION'
+  register: output2
+
+- name: "Debug"
+  debug:
+    msg:
+      - "{{ output1.stdout }}"
+      - "{{ output2.stdout }}"
