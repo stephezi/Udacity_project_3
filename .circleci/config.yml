@@ -143,8 +143,7 @@ jobs:
             - run:
                 name: Ensure front-end infrastructure exist
                 command: |
-                    wait_for_connection:
-                      timeout: 60
+                    sleep 60
             - run:
                 name: Add back-end ip to ansible inventory
                 command: |
