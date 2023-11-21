@@ -109,7 +109,7 @@ jobs:
 
   deploy-infrastructure:
         docker:
-            - image: amazon/aws-cli
+            - image: node:13.8-buster
         steps:
             - checkout
             - run:
@@ -140,6 +140,11 @@ jobs:
                     --tags project=udapeople \
                     --stack-name "udapeople-${CIRCLE_WORKFLOW_ID:0:7}-frontend" \
                     --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+            - run:
+                name: Ensure front-end infrastructure exist
+                command: |
+                    wait_for_connection:
+                      timeout: 60
             - run:
                 name: Add back-end ip to ansible inventory
                 command: |
