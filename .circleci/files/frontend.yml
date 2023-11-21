@@ -11,11 +11,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "udapeople-${ID}"
-      PublicAccessBlockConfiguration:
-          BlockPublicAcls: false
-      OwnershipControls:
-          Rules:
-            - ObjectOwnership: ObjectWriter
+      AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: 404.html

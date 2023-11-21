@@ -20,12 +20,40 @@ Resources:
         ToPort: 3030
         CidrIp: 0.0.0.0/0
 
+  PrometheusSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub UdaPeople-Prometheus-${ID}
+      GroupDescription: Allow port 22, port 9090, 9093, 9100.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          Description: SSH
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9090
+          ToPort: 9090
+          Description: Prometheus server
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9093
+          ToPort: 9093
+          Description: Prometheus alert manager
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9100
+          ToPort: 9100
+          Description: Prometheus node exporter
+          CidrIp: 0.0.0.0/0
+
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
+        - Ref: PrometheusSecurityGroup
       KeyName: udacity
       ImageId: ami-0230bd60aa48260c6
       Tags:
