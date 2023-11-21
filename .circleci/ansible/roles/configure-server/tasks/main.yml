@@ -19,9 +19,9 @@
     url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
     state: present
 
-- name: Add nodejs version 13 repository
+- name: Add nodejs version 20 repository
   apt_repository:
-    repo: deb https://deb.nodesource.com/node_13.x {{ ansible_distribution_release }} main
+    repo: deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main
     state: present
     update_cache: yes
 

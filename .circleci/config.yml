@@ -145,7 +145,7 @@ jobs:
                 command: |
                     aws ec2 describe-instances \
                     --query 'Reservations[*].Instances[*].PublicIpAddress' \
-                    --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                    --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                     --output text >> .circleci/ansible/inventory.txt
             - persist_to_workspace:
                 root: .circleci/ansible/
@@ -182,7 +182,7 @@ jobs:
               command: |
                   # Your command
                   cd .circleci/ansible
-                  ansible-playbook -vvv inventory.txt configure-server.yml -k
+                  ansible-playbook -i inventory.txt configure-server.yml
           # Here's where you will add some code to rollback on failure
           - destroy_environment
 
@@ -248,7 +248,7 @@ jobs:
                 name: Get backend url
                 command: |
                     # your code here
-                    BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+                    BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
                     export API_URL="http://${BACKEND_IP}:3030"
                     echo "${API_URL}"
                     echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env

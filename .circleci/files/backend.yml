@@ -19,6 +19,10 @@ Resources:
         FromPort: 3030
         ToPort: 3030
         CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 3000
+        ToPort: 3000
+        CidrIp: 0.0.0.0/0
 
   PrometheusSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -55,7 +59,7 @@ Resources:
         - Ref: InstanceSecurityGroup
         - Ref: PrometheusSecurityGroup
       KeyName: udacity
-      ImageId: ami-0230bd60aa48260c6
+      ImageId: ami-0fc5d935ebf8bc3bc
       Tags:
         - Key: Name
           Value: !Sub udapeople-backend-${ID}
