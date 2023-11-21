@@ -6,6 +6,7 @@
     update_cache : true
 
 - name: Install nodejs prerequisites
+  become: true
   apt:
     name:
       - apt-transport-https
@@ -15,11 +16,13 @@
     state: present
 
 - name: Add nodejs apt key
+  become: true
   apt_key:
     url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
     state: present
 
 - name: Add nodejs version 20 repository
+  become: true
   apt_repository:
     repo: deb https://deb.nodesource.com/node_20.x {{ ansible_distribution_release }} main
     state: present
