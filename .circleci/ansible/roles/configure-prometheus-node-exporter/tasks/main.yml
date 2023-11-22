@@ -20,4 +20,8 @@
 
 - name: "enable node_exporter service"
   become: true
+  raw: systemctl enable node_exporter
+
+- name: "start node_exporter service"
+  become: true
   raw: systemctl start node_exporter
