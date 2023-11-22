@@ -18,12 +18,12 @@
     src: node_exporter.service
     dest: /etc/systemd/system/
 
-- run:
-    name: enable node_exporter service
-    command: |
-        systemctl enable node_exporter
+- name: enable node_exporter service
+  become: true
+  ansible.builtin.shell: |
+    systemctl enable node_exporter
 
-- run:
-    name: start node_exporter service
-    command: |
-        systemctl start node_exporter
+- name: start node_exporter service
+  become: true
+  ansible.builtin.shell: |
+    systemctl start node_exporter
