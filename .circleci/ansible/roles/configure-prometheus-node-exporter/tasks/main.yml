@@ -18,15 +18,6 @@
     src: node_exporter.service
     dest: /etc/systemd/system/
 
-- name: "wait 600 seconds for node manager."
-    # Your code here
-  wait_for_connection:
-      timeout: 600
-
 - name: "enable node_exporter service"
   become: true
-  systemd:
-    state: started
-    daemon_reload: yes
-    name: node_exporter
-    enabled: yes
+  raw: systemctl start node_exporter
