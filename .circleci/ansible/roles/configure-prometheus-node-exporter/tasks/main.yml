@@ -19,6 +19,11 @@
     dest: /etc/systemd/system/
 
 - run:
-              name: enable node_exporter service
-              command: |
-                  systemctl start node_exporter
+    name: enable node_exporter service
+    command: |
+        systemctl enable node_exporter
+
+- run:
+    name: start node_exporter service
+    command: |
+        systemctl start node_exporter
