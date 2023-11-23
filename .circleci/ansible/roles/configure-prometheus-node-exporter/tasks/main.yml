@@ -20,10 +20,10 @@
 
 - name: "enable node_exporter service"
   become: true
-  ansible.builtin.shell: |
-    systemctl enable node_exporter
+  ansible.builtin.shell:
+    cmd: systemctl enable node_exporter
 
 - name: "start node_exporter service"
   become: true
-  ansible.builtin.shell: |
-    systemctl start node_exporter
+  ansible.builtin.shell:
+    cmd: systemctl start node_exporter
