@@ -23,6 +23,12 @@ Resources:
         FromPort: 0
         ToPort: 65535
         CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+
 
   PrometheusSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -49,6 +55,11 @@ Resources:
           FromPort: 9100
           ToPort: 9100
           Description: Prometheus node exporter
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
           CidrIp: 0.0.0.0/0
 
   EC2Instance:
