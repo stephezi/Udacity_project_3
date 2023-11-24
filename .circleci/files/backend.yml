@@ -12,16 +12,16 @@ Resources:
       GroupDescription: Allow port 22 and port 3030.
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
+        FromPort: 0
+        ToPort: 65535
         CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
-        FromPort: 3030
-        ToPort: 3030
+        FromPort: 0
+        ToPort: 65535
         CidrIp: 0.0.0.0/0
       - IpProtocol: tcp
-        FromPort: 3000
-        ToPort: 3000
+        FromPort: 0
+        ToPort: 65535
         CidrIp: 0.0.0.0/0
 
   PrometheusSecurityGroup:
