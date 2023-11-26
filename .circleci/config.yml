@@ -304,7 +304,6 @@ jobs:
           - checkout
           # Add ssh keys with fingerprint
           - add_ssh_keys:
-              # You can get this ID in the section where you registered the SSH Key
               fingerprints: ["cf:8b:fd:e4:26:a6:34:22:9e:c2:fd:69:63:7e:58:4a"]
           # attach workspace
           - attach_workspace:
