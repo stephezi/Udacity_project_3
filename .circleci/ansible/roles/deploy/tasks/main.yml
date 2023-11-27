@@ -9,6 +9,14 @@
   npm:
     path: ~/
 
+- name: "Install pm2"
+  become: true
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
 - name: "Stop currently running app"
   ignore_errors: true
   shell: |
