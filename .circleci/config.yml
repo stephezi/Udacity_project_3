@@ -9,8 +9,10 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-              aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID:0:7}-frontend
               aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID:0:7}-backend
+              aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+              aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID:0:7}-frontend
+              exit 0
 
   revert-migrations:
         description: Revert the last migration if successfully run in the current workflow.
@@ -22,11 +24,10 @@ commands:
                     # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
                     SUCCESS=$(curl --insecure https://kvdb.io/Jg9tJadoirqbBsLsrvPAqN/migration_${CIRCLE_WORKFLOW_ID:0:7});
                     echo $SUCCESS;
-                    if(( $SUCCESS==1 ));
+                    if(( $SUCCESS == 1 ));
                     then
                         cd ~/project/backend;
                         npm install;
-                        #  Add revert code here. You can find this in the Getting Started section.
                         npm run migrations:revert
                     fi
 
