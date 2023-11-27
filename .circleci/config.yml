@@ -217,7 +217,7 @@ jobs:
                   # Your command
                   cd .circleci/ansible
                   ansible-playbook -i inventory.txt configure-server.yml
-          - destroy_environment
+          # - destroy_environment
 
   run-migrations:
       docker:
@@ -255,8 +255,8 @@ jobs:
                   else
                     echo "No migrations are pending"
                   fi
-          - destroy_environment
-          - revert-migrations
+          # - destroy_environment
+          # - revert-migrations
 
   deploy-frontend:
         docker:
@@ -302,8 +302,8 @@ jobs:
                 paths:
                 - frontend/dist
             # Here's where you will add some code to rollback on failure
-            - destroy_environment
-            - revert-migrations
+            # - destroy_environment
+            # - revert-migrations
 
   deploy-backend:
       docker:
@@ -349,8 +349,8 @@ jobs:
                   cat inventory.txt
                   ansible-playbook -i inventory.txt deploy-backend.yml
           # Here's where you will add some code to rollback on failure
-          - destroy_environment
-          - revert-migrations
+          # - destroy_environment
+          # - revert-migrations
 
   smoke-test:
         docker:
@@ -400,8 +400,8 @@ jobs:
                         exit 1
                     fi
             # Here's where you will add some code to rollback on failure
-            - destroy_environment
-            - revert-migrations
+            # - destroy_environment
+            # - revert-migrations
   cleanup:
         docker:
             # Docker image here

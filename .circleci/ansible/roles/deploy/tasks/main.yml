@@ -1,41 +1,41 @@
----
+- name: Create app dir
+  become: yes
+  file:
+    path: /home/ubuntu/app
+    state: directory
 
-- name: "Ship tar file to ec2 instance and extract it"
+- name: "Copy backend build folder to EC2"
+  become: yes
   unarchive:
-    src: /root/project/artifact.tar.gz
-    dest: ~/
+    src: /tmp/workspace/backend.tar.gz
+    dest: /home/ubuntu/app/
+    owner: ubuntu
 
-- name: "Install backend server's package."
-  npm:
-    path: ~/
+- name: "Copy package.json to EC2"
+  become: yes
+  copy:
+    src: /tmp/workspace/package.json
+    dest: /home/ubuntu/app/
+    owner: ubuntu
 
-- name: "Install pm2"
-  become: true
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
+- name: "NPM Install"
+  shell:
+    cmd: npm install --production
+    chdir: /home/ubuntu/app
 
-- name: "Stop currently running app"
-  ignore_errors: true
+- name: "Start backend with pm2"
+  become: yes
   shell: |
-    pm2 stop server
-
-- name: "Start the app"
-  shell: |
-    pm2 start npm -- start --name server
-
-- name: "Check env TYPEORM_ENTITIES"
-  command: 'echo $TYPEFORM_ENTITES'
-  register: output1
-
-- name: "Check env TYPEORM_CONNECTION"
-  command: 'echo $TYPEFORM_CONNECTION'
-  register: output2
-
-- name: "Debug"
-  debug:
-    msg:
-      - "{{ output1.stdout }}"
-      - "{{ output2.stdout }}"
+    cd /home/ubuntu/app
+    pm2 start main.js --name app
+  environment:
+    ENVIRONMENT: production
+    TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
+    TYPEORM_MIGRATIONS_DIR: "./migrations"
+    TYPEORM_MIGRATIONS: "./migrations/*.js"
+    TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
+    TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
+    TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
+    TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
+    TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
+    TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
