@@ -306,48 +306,44 @@ jobs:
             # - revert-migrations
 
   deploy-backend:
-      docker:
-          # Docker image here that supports Ansible
-          - image: node:13.8-buster
-      steps:
-          # Checkout code from git
-          - checkout
-          # Add ssh keys with fingerprint
-          - add_ssh_keys:
-              fingerprints: ["cf:8b:fd:e4:26:a6:34:22:9e:c2:fd:69:63:7e:58:4a"]
-          # attach workspace
-          - attach_workspace:
-              at: .circleci/ansible/
-          - run:
-              name: Update packages
-              command: |
-                  apt update
-          - run:
-              name: Install dependencies (Tar)
-              command: |
-                  apt-get -y install tar
-          - run:
-              name: Install dependencies (AWS-Cli)
-              command: |
-                  apt-get -y install awscli
-          - run:
-              name: Install dependencies (Ansible)
-              command: |
-                  apt-get -y install ansible
-          - run:
-              name: Deploy backend
-              command: |
-                  # your code here
-                  cd backend
-                  npm i
-                  npm run build
-                  cd ..
-                  # Zip the directory
-                  tar -C backend -czvf artifact.tar.gz .
-                  echo "Contents  of the inventory.txt file is -------"
-                  cd .circleci/ansible
-                  cat inventory.txt
-                  ansible-playbook -i inventory.txt deploy-backend.yml
+    docker:
+      # Docker image here that supports Ansible
+      - image: python:3.7-alpine3.11
+    steps:
+      # Checkout code from git
+      - checkout
+      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+          fingerprints: ['cf:8b:fd:e4:26:a6:34:22:9e:c2:fd:69:63:7e:58:4a']
+      # attach workspace
+      - attach_workspace:
+          at: ~/
+      - attach_workspace:
+          at: /tmp/workspace
+      - restore_cache:
+          key: backend-build
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            apk add --update ansible openssh-client tar gzip curl nodejs npm
+            pip install awscli
+      - run:
+          name: Deploy backend
+          no_output_timeout: 20m
+          command: |
+            # your code here
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i inventory.txt deploy-backend.yml
           # Here's where you will add some code to rollback on failure
           # - destroy_environment
           # - revert-migrations
@@ -406,6 +402,36 @@ jobs:
               # Here's where you will add some code to rollback on failure
               # - destroy_environment
               # - revert-migrations
+
+  cloudfront-update:
+      docker:
+          # Docker image here that supports AWS CLI
+          - image: node:13.8-buster
+      steps:
+          # Checkout code from git
+          - checkout
+          - run:
+              name: Update packages
+              command: |
+                  apt update
+          - run:
+              name: Install dependencies (AWS-Cli)
+              command: |
+                  apt-get -y install awscli
+          - run:
+              name: Update cloudfront distribution
+              command: |
+                  # your code here
+                  aws cloudformation deploy \
+                  --template-file .circleci/files/cloudfront.yml \
+                  --stack-name InitialStack \
+                   --region eu-east-1 \
+                  --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
+                  --tags project=udapeople
+          # Here's where you will add some code to rollback on failure
+          - destroy_environment
+          - revert-migrations
+
   cleanup:
         docker:
             # Docker image here
@@ -451,38 +477,8 @@ jobs:
                         aws cloudformation delete-stack --stack-name "${OldWorkflowID}-backend"
                         aws cloudformation delete-stack --stack-name "${OldWorkflowID}-frontend"
                     fi
-
             - destroy_environment
             - revert-migrations
-
-
-  cloudfront-update:
-      docker:
-          # Docker image here that supports AWS CLI
-          - image: node:13.8-buster
-      steps:
-          # Checkout code from git
-          - checkout
-          - run:
-              name: Update packages
-              command: |
-                  apt update
-          - run:
-              name: Install dependencies (AWS-Cli)
-              command: |
-                  apt-get -y install awscli
-          - run:
-              name: Update cloudfront distribution
-              command: |
-                  # your code here
-                  aws cloudformation deploy \
-                  --template-file .circleci/files/cloudfront.yml \
-                  --stack-name InitialStack \
-                  --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-                  --tags project=udapeople
-          # Here's where you will add some code to rollback on failure
-          - destroy_environment
-          - revert-migrations
 
 workflows:
     default:
