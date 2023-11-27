@@ -399,6 +399,83 @@ jobs:
             # Here's where you will add some code to rollback on failure
             - destroy_environment
             - revert-migrations
+  cleanup:
+        docker:
+            # Docker image here
+            - image: node:13.8-buster
+        steps:
+            # Checkout code from git
+            - checkout
+            - run:
+                name: Update packages
+                command: |
+                    apt update
+            - run:
+                name: Install dependencies (AWS-Cli)
+                command: |
+                    apt-get -y install awscli
+            - run:
+                name: Remove old stacks and files
+                command: |
+                    # Get current workflow ID
+                    CurrentWorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}"
+
+                    echo "Current Workflow Id: ${CurrentWorkflowID}"
+
+                    # if ${CIRCLE_WORKFLOW_ID:0:7} is empty, then raise error
+                    if [[ -z "${CIRCLE_WORKFLOW_ID:0:7}" ]]
+                    then
+                        echo 'ERROR: CANNOT CLEAN UP.'
+                        exit 1;
+                    fi
+
+                    # Get old workflow ID
+                    OldWorkflowID=$(aws cloudformation \
+                    list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                    --no-paginate --output text)
+
+                    echo "Old Workflow Id: ${OldWorkflowID}"
+
+                    # If Old Workflow ID is NOT Current Workflow ID, then delete
+                    if [[ "${CurrentWorkflowID}" != "${OldWorkflowID}" ]]
+                    then
+                        echo 'CLEANING UP OLD STACK'
+                        aws s3 rm "s3://${OldWorkflowID}" --recursive
+                        aws cloudformation delete-stack --stack-name "${OldWorkflowID}-backend"
+                        aws cloudformation delete-stack --stack-name "${OldWorkflowID}-frontend"
+                    fi
+
+            - destroy_environment
+            - revert-migrations
+            
+
+  cloudfront-update:
+      docker:
+          # Docker image here that supports AWS CLI
+          - image: node:13.8-buster
+      steps:
+          # Checkout code from git
+          - checkout
+          - run:
+              name: Update packages
+              command: |
+                  apt update
+          - run:
+              name: Install dependencies (AWS-Cli)
+              command: |
+                  apt-get -y install awscli
+          - run:
+              name: Update cloudfront distribution
+              command: |
+                  # your code here
+                  aws cloudformation deploy \
+                  --template-file .circleci/files/cloudfront.yml \
+                  --stack-name InitialStack \
+                  --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
+                  --tags project=udapeople
+          # Here's where you will add some code to rollback on failure
+          - destroy_environment
+          - revert-migrations
 
 workflows:
     default:
@@ -426,3 +503,7 @@ workflows:
             requires: [deploy-infrastructure]
         - smoke-test:
                 requires: [deploy-backend, deploy-frontend]
+        - cleanup:
+            requires: [smoke-test]
+        - cloudfront-update:
+            requires: [cleanup]
