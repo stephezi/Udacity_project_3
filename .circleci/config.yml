@@ -365,7 +365,7 @@ jobs:
           command: |
             # Fetch and prepare the BACKEND_IP env var
             export BACKEND_IP=$(aws ec2 describe-instances  --region us-east-1 \
-                --filters "Name=tag:Name, Value=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --filters "Name=tag:Name, Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --query "Reservations[].Instances[*].PublicIpAddress" \
                 --output text)
             export API_URL="http://${BACKEND_IP}:3030"
@@ -380,15 +380,13 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
             echo ${CIRCLE_WORKFLOW_ID:0:7}
             echo ${CIRCLE_WORKFLOW_ID:0:7}
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"
-            curl -s http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees | grep "Welcome"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.us-east-1.amazonaws.com/#/employees"
+            curl -s http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.us-east-1.amazonaws.com/#/employees | grep "Welcome"
             echo ${URL}
-            if curl -s http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees | grep "Welcome"
+            if curl -s http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.us-east-1.amazonaws.com/#/employees | grep "Welcome"
             then
-                # Change this to 0 after the job fails
               return 0
             else
               return 1
